@@ -78,6 +78,7 @@
 					</div>	
 					<div class="form-group">
 						<div class="col-sm-offset-2 col-sm-10">
+							<input type="hidden" name="request" value="graph"/>
 							<button type="submit" class="btn btn-default">Select</button>
 						</div>
 					</div>						
@@ -111,10 +112,10 @@
 							{% if latest_infection_list %}
 							<select class="form-control" name="infection_id">
 								{% for infection in latest_infection_list %}
-								{% if current_index_infection == infection.id %}
-								<option selected="selected" value="{{ infection.id }}">{{ infection.name }}</option>
+								{% if current_index_infection == forloop.counter %}
+								<option selected="selected" value="{{ forloop.counter }}">{{ infection.name }}</option>
 								{% else %}
-								<option value="{{ infection.id }}">{{ infection.name }}</option>
+								<option value="{{ forloop.counter }}">{{ infection.name }}</option>
 								{% endif %}
 								
 								{% endfor %}
@@ -126,6 +127,7 @@
 					</div>	
 					<div class="form-group">
 						<div class="col-sm-offset-2 col-sm-10">
+							<input type="hidden" name="request" value="infection"/>
 							<button type="submit" class="btn btn-default">Select</button>
 						</div>
 					</div>							
