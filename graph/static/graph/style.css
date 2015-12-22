@@ -1,0 +1,12 @@
+body {
+    /*background: white url("images/background.jpg") no-repeat right bottom;*/
+}
+
+li a {
+    color: green;
+}
+
+li a:visited{
+
+color: red;
+}
