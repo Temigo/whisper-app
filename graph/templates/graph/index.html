@@ -1,0 +1,232 @@
+{% load staticfiles %}
+{% include "graph/header.html" %}
+
+
+
+<div class="col-md-3">
+<div class="panel panel-default">
+	<div class="panel-heading"><h3 class="panel-title">Graph : {{current_index}}</h3></div>
+	<div class="panel-body">
+		<form class="form-horizontal" method="post" action="/graph/">
+			{% csrf_token %}
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active"><a href="#new_graph" aria-controls="new_graph" role="tab" data-toggle="tab">Nouveau</a></li>
+				<li role="presentation"><a href="#existing_graph" aria-controls="existing_graph" role="tab" data-toggle="tab">Existant</a></li>
+			</ul>
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="new_graph">
+					<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
+						<div class="panel panel-default">
+							<div class="panel-heading" role="tab" id="headingOne">
+								<h4 class="panel-title">
+									<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Importer</a>
+								</h4>
+							</div>
+							<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+								<div class="panel-body">
+									Coming soon !
+								</div>
+							</div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading" role="tab" id="headingTwo">
+								<h4 class="panel-title">
+									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Générer</a>
+								</h4>
+							</div>
+							<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+								<div class="panel-body">
+									Coming soon !
+								</div>
+							</div>
+						</div>	
+						<div class="panel panel-default">
+							<div class="panel-heading" role="tab" id="headingThree">
+								<h4 class="panel-title">
+									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Créer</a>
+								</h4>
+							</div>
+							<div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+								<div class="panel-body">
+									Coming soon !
+								</div>
+							</div>
+						</div>											
+					</div>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="existing_graph">
+					<div class="form-group">
+						<label for="" class="col-sm-2 control-label">Graph</label>
+						<div class="col-sm-10">
+							{% if latest_graph_list %}
+							<select class="form-control" name="graph_id">
+								{% for graph in latest_graph_list %}
+								{% if current_index == graph.id %}
+								<option selected="selected" value="{{ graph.id }}">{{ graph.name }}</option>
+								{% else %}
+								<option value="{{ graph.id }}">{{ graph.name }}</option>
+								{% endif %}
+								
+								{% endfor %}
+							</select>
+							{% else %}
+							<p>No graphs are available.</p>
+							{% endif %}
+						</div>
+					</div>	
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<button type="submit" class="btn btn-default">Select</button>
+						</div>
+					</div>						
+				</div>
+			</div>
+
+
+		</form>
+	</div>
+</div>
+
+<div class="panel panel-default">
+	<div class="panel-heading"><h3 class="panel-title">Infection {{current_index_infection}} for graph {{current_index}}</h3></div>
+	<div class="panel-body">
+		<form class="form-horizontal" method="post" action="/graph/">
+			{% csrf_token %}
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active"><a href="#new_infection" aria-controls="new_infection" role="tab" data-toggle="tab">Nouveau</a></li>
+				<li role="presentation"><a href="#existing_infection" aria-controls="existing_infection" role="tab" data-toggle="tab">Existant</a></li>
+			</ul>
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="new_infection">
+					Coming soon !							
+				</div>
+				<div role="tabpanel" class="tab-pane" id="existing_infection">
+					<div class="form-group">
+						<label for="" class="col-sm-2 control-label">Infection</label>
+						<div class="col-sm-10">
+							{% if latest_infection_list %}
+							<select class="form-control" name="infection_id">
+								{% for infection in latest_infection_list %}
+								{% if current_index_infection == infection.id %}
+								<option selected="selected" value="{{ infection.id }}">{{ infection.name }}</option>
+								{% else %}
+								<option value="{{ infection.id }}">{{ infection.name }}</option>
+								{% endif %}
+								
+								{% endfor %}
+							</select>
+							{% else %}
+							<p>No infection graphs are available.</p>
+							{% endif %}
+						</div>
+					</div>	
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<button type="submit" class="btn btn-default">Select</button>
+						</div>
+					</div>							
+				</div>				
+			</div>						
+		</form>
+	</div>
+</div>
+
+<div class="panel panel-default">
+	<div class="panel-heading"><h3 class="panel-title">Choose Algorithm</h3></div>
+	<div class="panel-body">
+
+	</div>
+</div>
+
+</div>
+
+<div class="col-md-9" id="canvas">
+	<!--<img src="{% static 'graph/images/background.jpg' %}" class="img-responsive"/>-->
+	<!--<svg id="canvas"></svg>-->
+</div>
+
+<script>
+var canvas = d3.select('#canvas');
+//Constants for the SVG
+var width = 500,
+    height = 500;
+    
+//Set up the colour scale
+var color = d3.scale.category20();
+
+//Set up the force layout
+var force = d3.layout.force()
+    .charge(-120)
+    .linkDistance(30)
+    .size([width, height]);
+    
+//Append a SVG to the body of the html page. Assign this SVG as an object to svg
+var svg = d3.select("#canvas").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+//Read the data from the mis element 
+var nodes = {{nodes|safe}};
+var links = {{links|safe}};
+var infected_nodes = {{infected_nodes|safe}};
+
+for (d in nodes) {
+	if (d in infected_nodes) { nodes[d].infected = true; } else {nodes[d].infected = false; }
+}
+
+//Creates the graph data structure out of the json data
+force.nodes(nodes)
+    .links(links)
+    .start();
+    
+//Create all the line svgs but without locations yet
+var link = svg.selectAll(".link")
+    .data(links)
+    .enter().append("line")
+    .attr("class", "link")
+    .style("stroke-width", function (d) {
+    return Math.sqrt(d.value);
+});
+
+//Do the same with the circles for the nodes - no 
+var node = svg.selectAll(".node")
+    .data(nodes)
+    .enter().append("circle")
+    .attr("class", "node")
+    .attr("r", 8)
+    .style("fill", function (d) {
+    if (d.infected) { color_index = 0; } else { color_index = 1; }
+    return color(color_index);
+})
+    .call(force.drag);
+
+
+//Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
+force.on("tick", function () {
+    link.attr("x1", function (d) {
+        return d.source.x;
+    })
+        .attr("y1", function (d) {
+        return d.source.y;
+    })
+        .attr("x2", function (d) {
+        return d.target.x;
+    })
+        .attr("y2", function (d) {
+        return d.target.y;
+    });
+
+    node.attr("cx", function (d) {
+        return d.x;
+    })
+        .attr("cy", function (d) {
+        return d.y;
+    });
+});
+</script>
+
+{% include "graph/footer.html" %}

@@ -1,0 +1,11 @@
+{% load staticfiles %}
+{% include "graph/header.html" %}
+
+<h1>{{ graph }}</h1>
+
+<form action="{% url 'graph:select' graph.id %}" method="post">
+{% csrf_token %} 
+<input type="submit" value="Vote" />
+</form>
+
+{% include "graph/footer.html" %}
