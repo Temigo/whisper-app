@@ -23,7 +23,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingOne">
 								<h4 class="panel-title">
-									<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Importer</a>
+									<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Importer</a>
 								</h4>
 							</div>
 							<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
@@ -39,7 +39,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingTwo">
 								<h4 class="panel-title">
-									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Générer</a>
+									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Générer</a>
 								</h4>
 							</div>
 							<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
@@ -71,7 +71,7 @@
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingThree">
 								<h4 class="panel-title">
-									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Créer</a>
+									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Créer</a>
 								</h4>
 							</div>
 							<div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
@@ -112,12 +112,19 @@
 							<input type="hidden" name="request" value="existing_graph"/>
 							<button type="submit" class="btn btn-default">Select</button>
 						</div>
-					</div>						
+					</div>	
+				</form>					
 				</div>
 			</div>
-
-			
+		<div class="text-center">
+		<form class="form-horizontal" method="post" action="/graph/export/graph/">
+			{% csrf_token %}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Export Graph (JSON)</button>
+			</div>
 		</form>
+		</div>
+		
 	</div>
 </div>
 
@@ -165,6 +172,14 @@
 				</div>				
 			</div>						
 		</form>
+	<div class="text-center">
+		<form class="form-horizontal" method="post" action="/graph/export/infection/">
+			{% csrf_token %}
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Export Infection (JSON)</button>
+			</div>
+		</form>	
+	</div>
 	</div>
 </div>
 
@@ -175,19 +190,9 @@
 	</div>
 </div>
 
-<form class="form-horizontal" method="post" action="/graph/export/graph/">
-	{% csrf_token %}
-	<div class="input-group">
-		<button type="submit" class="btn btn-primary">Export Graph (JSON)</button>
-	</div>
-</form>
 
-<form class="form-horizontal" method="post" action="/graph/export/infection/">
-	{% csrf_token %}
-	<div class="input-group">
-		<button type="submit" class="btn btn-primary">Export Infection (JSON)</button>
-	</div>
-</form>
+
+
 
 </div>
 

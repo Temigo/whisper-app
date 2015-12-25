@@ -62,7 +62,6 @@ def generate(request):
     if request.method == 'POST':
         generate_method_id = request.POST.get('generate_method')
         # FIXME : check if it is a number
-        # TODO limit n
         n = int(request.POST.get('generate_n'))
         generate_methods = {
         '1': nx.complete_graph,
@@ -80,6 +79,7 @@ def generate(request):
             generate_method = generate_methods[generate_method_id]
         except KeyError:
             raise Http404('Generation method doesn\'t exist.')
+        n = min(max(n, 0), 100000)
         g = generate_method(n)
         data = json_graph.node_link_data(g)
         return index(request, auto=False, data=data)
