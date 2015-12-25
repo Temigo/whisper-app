@@ -28,7 +28,11 @@
 							</div>
 							<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
 								<div class="panel-body">
-									Coming soon !
+								<form class="form-horizontal" method="post" action="/graph/import/" enctype="multipart/form-data">
+									{% csrf_token %}
+									<input type="file" name="import_graph" accept="application/*"/>
+									<button class="btn btn-default" type="submit">OK</button>
+								</form>
 								</div>
 							</div>
 						</div>

@@ -84,8 +84,26 @@ def generate(request):
         data = json_graph.node_link_data(g)
         return index(request, auto=False, data=data)
     else:
-        raise Http404('Error in generation')
+        return index(request)
     
+
+def importing(request):
+    if request.method == 'POST':
+        f = request.FILES['import_graph']
+        # f.name
+        if f.content_type == 'application/json':
+            #with open('import_graph.json', 'wb+') as destination:
+                #for chunk in f.chunks():
+                #    destination.write(chunk)
+                #
+                #destination.close()
+            data = json.load(f)
+            return index(request, auto=False, data=data)
+            
+        else:
+            return index(request)
+    else:
+        return index(request)
 
 def export_graph(request):
     data = request.session.get('data')
