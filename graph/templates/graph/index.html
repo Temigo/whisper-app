@@ -3,12 +3,12 @@
 
 
 
-<div class="col-md-3">
+<div class="col-md-4">
 <div class="panel panel-default">
 	<div class="panel-heading"><h3 class="panel-title">Graph : {{current_index}}</h3></div>
 	<div class="panel-body">
-		<form class="form-horizontal" method="post" action="/graph/">
-			{% csrf_token %}
+		
+			
 			<!-- Nav tabs -->
 			<ul class="nav nav-tabs" role="tablist">
 				<li role="presentation" class="active"><a href="#new_graph" aria-controls="new_graph" role="tab" data-toggle="tab">Nouveau</a></li>
@@ -17,6 +17,8 @@
 			<!-- Tab panes -->
 			<div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="new_graph">
+				
+					
 					<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingOne">
@@ -38,11 +40,27 @@
 							</div>
 							<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
 								<div class="panel-body">
-									<select class="form-control" name="generate_method">
-										<option value="">Complete graph</option>
-										<option value="">Cycle graph</option>
-									
+								<form class="form-horizontal" method="post" action="/graph/generate/">
+									{% csrf_token %}
+									<select class="form-control" name="generate_method" onchange="console.log(this.selectedIndex);">
+										<option value="1">Complete graph</option>
+										<option value="2">Cycle graph</option>
+										<option value="3">Circular ladder graph</option>
+										<option value="4">Dorogovtsev_goltsev_mendes graph</option>
+										<option value="5">Empty graph</option>
+										<option value="6">Hypercube graph</option>
+										<option value="7">Ladder graph</option>
+										<option value="8">Path graph</option>
+										<option value="9">Star graph</option>
+										<option value="10">Wheel graph</option>
 									</select>
+									<div class="input-group">
+										<span class="input-group-addon" id="sizing-addon">Valeur de n</span>
+										<input id="generate_n" name="generate_n" type="number" class="form-control" placeholder="10" aria-describedby="sizing-addon"/>
+									</div>
+									<input type="hidden" name="request" value="new_graph"/>
+									<button class="btn btn-default" type="submit">OK</button>
+								</form>
 								</div>
 							</div>
 						</div>	
@@ -57,10 +75,15 @@
 									Coming soon !
 								</div>
 							</div>
-						</div>											
+						</div>
 					</div>
+					
+					
+				
 				</div>
 				<div role="tabpanel" class="tab-pane" id="existing_graph">
+				<form class="form-horizontal" method="post" action="/graph/">
+					{% csrf_token %}
 					<div class="form-group">
 						<label for="" class="col-sm-2 control-label">Graph</label>
 						<div class="col-sm-10">
@@ -82,14 +105,14 @@
 					</div>	
 					<div class="form-group">
 						<div class="col-sm-offset-2 col-sm-10">
-							<input type="hidden" name="request" value="graph"/>
+							<input type="hidden" name="request" value="existing_graph"/>
 							<button type="submit" class="btn btn-default">Select</button>
 						</div>
 					</div>						
 				</div>
 			</div>
 
-
+			
 		</form>
 	</div>
 </div>
@@ -148,14 +171,34 @@
 	</div>
 </div>
 
+<form class="form-horizontal" method="post" action="/graph/export/graph/">
+	{% csrf_token %}
+	<div class="input-group">
+		<button type="submit" class="btn btn-primary">Export Graph (JSON)</button>
+	</div>
+</form>
+
+<form class="form-horizontal" method="post" action="/graph/export/infection/">
+	{% csrf_token %}
+	<div class="input-group">
+		<button type="submit" class="btn btn-primary">Export Infection (JSON)</button>
+	</div>
+</form>
+
 </div>
 
-<div class="col-md-9" id="canvas">
+<div class="col-md-7" id="canvas">
 	<!--<img src="{% static 'graph/images/background.jpg' %}" class="img-responsive"/>-->
 	<!--<svg id="canvas"></svg>-->
 </div>
 
 <script>
+/*
+Thanks to mbostock
+and to Coppelia
+http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
+*/
+
 var canvas = d3.select('#canvas');
 //Constants for the SVG
 var width = 500,
@@ -167,7 +210,7 @@ var color = d3.scale.category20();
 //Set up the force layout
 var force = d3.layout.force()
     .charge(-120)
-    .linkDistance(30)
+    .linkDistance(50)
     .size([width, height]);
     
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
@@ -184,6 +227,43 @@ for (d in nodes) {
 	if (d in infected_nodes) { nodes[d].infected = true; } else {nodes[d].infected = false; }
 }
 
+//Toggle stores whether the highlighting is on
+var toggle = 0;
+//Create an array logging what is connected to what
+var linkedByIndex = {};
+for (i = 0; i < nodes.length; i++) {
+    linkedByIndex[i + "," + i] = 1;
+};
+links.forEach(function (d) {
+    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+});
+//This function looks up whether a pair are neighbours
+function neighboring(a, b) {
+    return linkedByIndex[a.index + "," + b.index];
+}
+function connectedNodes() {
+    if (toggle == 0) {
+        //Reduce the opacity of all but the neighbouring nodes
+        d = d3.select(this).node().__data__;
+        node.style("opacity", function (o) {
+            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+        });
+        link.style("opacity", function (o) {
+            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+        });
+        //Reduce the op
+        toggle = 1;
+    } else {
+        //Put them back to opacity=1
+        node.style("opacity", 1);
+        link.style("opacity", 1);
+        toggle = 0;
+    }
+}
+
+
+
+
 //Creates the graph data structure out of the json data
 force.nodes(nodes)
     .links(links)
@@ -195,7 +275,7 @@ var link = svg.selectAll(".link")
     .enter().append("line")
     .attr("class", "link")
     .style("stroke-width", function (d) {
-    return Math.sqrt(d.value);
+    return 1;
 });
 
 //Do the same with the circles for the nodes - no 
@@ -208,7 +288,8 @@ var node = svg.selectAll(".node")
     if (d.infected) { color_index = 0; } else { color_index = 1; }
     return color(color_index);
 })
-    .call(force.drag);
+    .call(force.drag)
+    .on('dblclick', connectedNodes);
 
 
 //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
@@ -233,6 +314,9 @@ force.on("tick", function () {
         return d.y;
     });
 });
+
+
+
 </script>
 
 {% include "graph/footer.html" %}
