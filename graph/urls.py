@@ -11,5 +11,6 @@ urlpatterns = [
     url(r'^import/$', views.importing, name='importing'),
     url(r'^export/graph/$', views.export_graph, name='export_graph'),
     url(r'^export/infection/$', views.export_infection, name='export_infection'),
+    url(r'^import/algorithm/$', views.import_algorithm, name='import_algorithm'),
+    url(r'^import/infection/$', views.import_infection, name='import_infection'),
 ]
-

@@ -1,14 +1,13 @@
 {% load staticfiles %}
 {% include "graph/header.html" %}
 
-
-
 <div class="col-md-4">
+<!-- Graph -->
 <div class="panel panel-default">
-	<div class="panel-heading"><h3 class="panel-title">Graph : {{current_index}}</h3></div>
+	<div class="panel-heading">
+		<h3 class="panel-title">Graph : {{current_index}}</h3>
+	</div>
 	<div class="panel-body">
-		
-			
 			<!-- Nav tabs -->
 			<ul class="nav nav-tabs" role="tablist">
 				<li role="presentation" class="active"><a href="#new_graph" aria-controls="new_graph" role="tab" data-toggle="tab">Nouveau</a></li>
@@ -17,13 +16,15 @@
 			<!-- Tab panes -->
 			<div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="new_graph">
-				
-					
+
+
 					<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingOne">
 								<h4 class="panel-title">
-									<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Importer</a>
+									<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+										<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Importer
+									</a>
 								</h4>
 							</div>
 							<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
@@ -39,7 +40,9 @@
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingTwo">
 								<h4 class="panel-title">
-									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Générer</a>
+									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+										<span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Générer
+									</a>
 								</h4>
 							</div>
 							<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
@@ -67,11 +70,13 @@
 								</form>
 								</div>
 							</div>
-						</div>	
+						</div>
 						<div class="panel panel-default">
 							<div class="panel-heading" role="tab" id="headingThree">
 								<h4 class="panel-title">
-									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Créer</a>
+									<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+										<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Créer
+									</a>
 								</h4>
 							</div>
 							<div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
@@ -81,9 +86,9 @@
 							</div>
 						</div>
 					</div>
-					
-					
-				
+
+
+
 				</div>
 				<div role="tabpanel" class="tab-pane" id="existing_graph">
 				<form class="form-horizontal" method="post" action="/graph/">
@@ -99,21 +104,21 @@
 								{% else %}
 								<option value="{{ graph.id }}">{{ graph.name }}</option>
 								{% endif %}
-								
+
 								{% endfor %}
 							</select>
 							{% else %}
 							<p>No graphs are available.</p>
 							{% endif %}
 						</div>
-					</div>	
+					</div>
 					<div class="form-group">
 						<div class="col-sm-offset-2 col-sm-10">
 							<input type="hidden" name="request" value="existing_graph"/>
 							<button type="submit" class="btn btn-default">Select</button>
 						</div>
-					</div>	
-				</form>					
+					</div>
+				</form>
 				</div>
 			</div>
 		<div class="text-center">
@@ -124,81 +129,106 @@
 			</div>
 		</form>
 		</div>
-		
+
 	</div>
 </div>
 
+<!-- Infection -->
 <div class="panel panel-default">
 	<div class="panel-heading"><h3 class="panel-title">Infection {{current_index_infection}} for graph {{current_index}}</h3></div>
 	<div class="panel-body">
-		<form class="form-horizontal" method="post" action="/graph/">
-			{% csrf_token %}
-			<!-- Nav tabs -->
-			<ul class="nav nav-tabs" role="tablist">
-				<li role="presentation" class="active"><a href="#new_infection" aria-controls="new_infection" role="tab" data-toggle="tab">Nouveau</a></li>
-				<li role="presentation"><a href="#existing_infection" aria-controls="existing_infection" role="tab" data-toggle="tab">Existant</a></li>
-			</ul>
-			<!-- Tab panes -->
-			<div class="tab-content">
-				<div role="tabpanel" class="tab-pane active" id="new_infection">
-					Coming soon !							
+		<!-- Nav tabs -->
+		<ul class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="active"><a href="#new_infection" aria-controls="new_infection" role="tab" data-toggle="tab">Nouveau</a></li>
+			<li role="presentation"><a href="#existing_infection" aria-controls="existing_infection" role="tab" data-toggle="tab">Existant</a></li>
+		</ul>
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="new_infection">
+				<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
+					<div class="panel panel-default">
+						<div class="panel-heading" role="tab" id="headingOneInfection">
+							<h4 class="panel-title">
+								<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneInfection" aria-expanded="true" aria-controls="collapseOneInfection"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Importer</a>
+							</h4>
+						</div>
+						<div id="collapseOneInfection" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOneInfection">
+							<div class="panel-body">
+							<form class="form-horizontal" method="post" action="/graph/import/infection" enctype="multipart/form-data">
+								{% csrf_token %}
+								<input type="file" name="import_infection" accept="application/*"/>
+								<button class="btn btn-default" type="submit">OK</button>
+							</form>
+							</div>
+						</div>
+					</div>
 				</div>
-				<div role="tabpanel" class="tab-pane" id="existing_infection">
-					<div class="form-group">
-						<label for="" class="col-sm-2 control-label">Infection</label>
-						<div class="col-sm-10">
-							{% if latest_infection_list %}
-							<select class="form-control" name="infection_id">
-								{% for infection in latest_infection_list %}
-								{% if current_index_infection == forloop.counter %}
-								<option selected="selected" value="{{ forloop.counter }}">{{ infection.name }}</option>
-								{% else %}
-								<option value="{{ forloop.counter }}">{{ infection.name }}</option>
-								{% endif %}
-								
-								{% endfor %}
-							</select>
-							{% else %}
-							<p>No infection graphs are available.</p>
-							{% endif %}
-						</div>
-					</div>	
-					<div class="form-group">
-						<div class="col-sm-offset-2 col-sm-10">
-							<input type="hidden" name="request" value="infection"/>
-							<button type="submit" class="btn btn-default">Select</button>
-						</div>
-					</div>							
-				</div>				
-			</div>						
-		</form>
-	<div class="text-center">
-		<form class="form-horizontal" method="post" action="/graph/export/infection/">
-			{% csrf_token %}
-			<div class="form-actions">
-				<button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Export Infection (JSON)</button>
 			</div>
-		</form>	
-	</div>
+			<div role="tabpanel" class="tab-pane" id="existing_infection">
+				<div class="form-group">
+					<label for="" class="col-sm-2 control-label">Infection</label>
+					<div class="col-sm-10">
+						{% if latest_infection_list %}
+						<select class="form-control" name="infection_id">
+							{% for infection in latest_infection_list %}
+							{% if current_index_infection == forloop.counter %}
+							<option selected="selected" value="{{ forloop.counter }}">{{ infection.name }}</option>
+							{% else %}
+							<option value="{{ forloop.counter }}">{{ infection.name }}</option>
+							{% endif %}
+
+							{% endfor %}
+						</select>
+						{% else %}
+						<p>No infection graphs are available.</p>
+						{% endif %}
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						<input type="hidden" name="request" value="infection"/>
+						<button type="submit" class="btn btn-default">Select</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Export infection -->
+		<div class="text-center">
+			<form class="form-horizontal" method="post" action="/graph/export/infection/">
+				{% csrf_token %}
+				<div class="form-actions">
+					<button type="submit" class="btn btn-primary">
+						<span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+						Export Infection (JSON)
+					</button>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>
 
+<!-- Algorithm -->
 <div class="panel panel-default">
 	<div class="panel-heading"><h3 class="panel-title">Choose Algorithm</h3></div>
 	<div class="panel-body">
-
+		<div class="text-center">
+			<form class="form-horizontal" method="post" action="/graph/import/algorithm/" enctype="multipart/form-data">
+				{% csrf_token %}
+				<div class="form-actions">
+					<input type="file" name="import_algorithm" accept="application/*"/>
+					<button type="submit" class="btn btn-primary">
+						<span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+						Import Algorithm (*.py)
+					</button>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>
-
-
-
-
-
 </div>
 
+<!-- Canvas with graph drawing -->
 <div class="col-md-7" id="canvas">
-	<!--<img src="{% static 'graph/images/background.jpg' %}" class="img-responsive"/>-->
-	<!--<svg id="canvas"></svg>-->
 </div>
 
 <script>
@@ -212,7 +242,7 @@ var canvas = d3.select('#canvas');
 //Constants for the SVG
 var width = 500,
     height = 500;
-    
+
 //Set up the colour scale
 var color = d3.scale.category20();
 
@@ -221,13 +251,13 @@ var force = d3.layout.force()
     .charge(-120)
     .linkDistance(50)
     .size([width, height]);
-    
+
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
 var svg = d3.select("#canvas").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-//Read the data from the mis element 
+//Read the data from the mis element
 var nodes = {{nodes|safe}};
 var links = {{links|safe}};
 var infected_nodes = {{infected_nodes|safe}};
@@ -277,7 +307,7 @@ function connectedNodes() {
 force.nodes(nodes)
     .links(links)
     .start();
-    
+
 //Create all the line svgs but without locations yet
 var link = svg.selectAll(".link")
     .data(links)
@@ -287,7 +317,7 @@ var link = svg.selectAll(".link")
     return 1;
 });
 
-//Do the same with the circles for the nodes - no 
+//Do the same with the circles for the nodes - no
 var node = svg.selectAll(".node")
     .data(nodes)
     .enter().append("circle")
