@@ -8,6 +8,23 @@ import json
 import networkx as nx
 from networkx.readwrite import json_graph
 
+from rest_framework import viewsets
+from .serializers import GraphSerializer, InfectionSerializer
+
+class GraphViewSet(viewsets.ModelViewSet):
+    """
+    API end-point for graphs
+    """
+    queryset = Graph.objects.all()
+    serializer_class = GraphSerializer
+
+class InfectionViewSet(viewsets.ModelViewSet):
+    """
+    API end-point for graphs
+    """
+    queryset = Infection.objects.all()
+    serializer_class = InfectionSerializer
+
 ######################################################################
 # Index
 def index(request, auto=True, data=None, data_infection=None):
