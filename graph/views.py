@@ -10,7 +10,7 @@ from networkx.readwrite import json_graph
 
 ######################################################################
 # Index
-def index(request, auto=True, data=None, data_infection=None):
+def index(request, auto=True, auto_infection=True, data=None, data_infection=None):
     """
     Index page - default
     """
@@ -47,12 +47,16 @@ def index(request, auto=True, data=None, data_infection=None):
         #current_graph_data = None
         #current_infection_graph_data = None
         current_graph_data = latest_graph_list[current_index].data
+    else:
+        current_graph_data = data
+
+    if auto_infection:
         if latest_infection_list:
             current_infection_graph_data = latest_infection_list[current_index_infection].data
             context['infected_nodes'] = json.dumps(current_infection_graph_data["nodes"])
     else:
-        current_graph_data = data
-
+        current_infection_graph_data = data_infection
+        
     context['nodes'] = json.dumps(current_graph_data["nodes"])
     context['links'] = json.dumps(current_graph_data["links"])
 
@@ -178,7 +182,7 @@ def import_infection(request):
                 #
                 #destination.close()
             data = json.load(f)
-            return index(request, auto=False, data_infection=data)
+            return index(request, auto=True, auto_infection=False, data_infection=data)
 
         else:
             return index(request)

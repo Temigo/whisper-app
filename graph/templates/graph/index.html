@@ -154,7 +154,7 @@
 						</div>
 						<div id="collapseOneInfection" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOneInfection">
 							<div class="panel-body">
-							<form class="form-horizontal" method="post" action="/graph/import/infection" enctype="multipart/form-data">
+							<form class="form-horizontal" method="post" action="/graph/import/infection/" enctype="multipart/form-data">
 								{% csrf_token %}
 								<input type="file" name="import_infection" accept="application/*"/>
 								<button class="btn btn-default" type="submit">OK</button>
@@ -229,6 +229,12 @@
 
 <!-- Canvas with graph drawing -->
 <div class="col-md-7" id="canvas">
+	<div class="panel panel-default">
+		<div class="panel-heading"><h3 class="panel-title">Visualization Parameters</h3></div>
+		<div class="panel-body">
+			Link Distance : <input type="range" min="1" max="150" id="linkDistance">
+		</div>
+	</div>
 </div>
 
 <script>
@@ -354,6 +360,11 @@ force.on("tick", function () {
     });
 });
 
+// Slider to adjust parameters
+d3.select("#linkDistance").on("input", function() {
+  force.linkDistance(this.value);
+  force.start();
+});
 
 
 </script>
