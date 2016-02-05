@@ -15,6 +15,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'name')
 
 class GraphSerializer(serializers.ModelSerializer):
+    data = serializers.JSONField(source='json_dumps')
     class Meta:
         model = Graph
         fields = ('name', 'data')
