@@ -11,5 +11,6 @@ router.register(r'infections', views.InfectionViewSet)
 app_name = 'graph'
 urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'^generate/$', views.GenerateGraph.as_view()),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

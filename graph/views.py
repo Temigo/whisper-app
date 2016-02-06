@@ -9,7 +9,10 @@ import networkx as nx
 from networkx.readwrite import json_graph
 
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
 from .serializers import GraphSerializer, InfectionSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 class GraphViewSet(viewsets.ModelViewSet):
     """
@@ -24,6 +27,35 @@ class InfectionViewSet(viewsets.ModelViewSet):
     """
     queryset = Infection.objects.all()
     serializer_class = InfectionSerializer
+
+class GenerateGraph(APIView):
+    def get(self, request, format=None):
+        print(request.query_params)
+        generate_method_id = request.query_params["generateMethod"]
+        n = int(request.query_params["n"])
+
+        generate_methods = {
+        '1': nx.complete_graph,
+        '2': nx.cycle_graph,
+        '3': nx.circular_ladder_graph,
+        '4': nx.dorogovtsev_goltsev_mendes_graph,
+        '5': nx.empty_graph,
+        '6': nx.hypercube_graph,
+        '7': nx.ladder_graph,
+        '8': nx.path_graph,
+        '9': nx.star_graph,
+        '10': nx.wheel_graph
+        }
+
+        try:
+            generate_method = generate_methods[generate_method_id]
+        except KeyError:
+            raise Http404('Generation method doesn\'t exist.')
+
+        g = generate_method(n)
+        data = json_graph.node_link_data(g)
+        return Response(data)
+
 
 ######################################################################
 # Index
