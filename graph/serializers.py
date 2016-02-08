@@ -21,6 +21,7 @@ class GraphSerializer(serializers.ModelSerializer):
         fields = ('name', 'data')
 
 class InfectionSerializer(serializers.ModelSerializer):
+    data = serializers.JSONField(source='json_dumps')
     class Meta:
         model = Infection
         fields = ('graph', 'name', 'data')

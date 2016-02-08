@@ -12,7 +12,7 @@ class Graph(models.Model):
 
     def __str__(self):
         return self.name
-        
+
     def json_dumps(self):
         return json.dumps(self.data)
 
@@ -23,3 +23,6 @@ class Infection(models.Model):
 
     def __str__(self):
         return self.name
+        
+    def json_dumps(self):
+        return json.dumps(self.data)
