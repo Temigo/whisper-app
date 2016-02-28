@@ -14,6 +14,9 @@ from .serializers import GraphSerializer, InfectionSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .lib.algorithm_shah_zaman import AlgorithmSZ
+from .lib.algorithm_netsleuth import AlgorithmNetsleuth
+
 class GraphViewSet(viewsets.ModelViewSet):
     """
     API end-point for graphs
@@ -30,7 +33,7 @@ class InfectionViewSet(viewsets.ModelViewSet):
 
 class GenerateGraph(APIView):
     def get(self, request, format=None):
-        print(request.query_params)
+        #print(request.query_params)
         generate_method_id = request.query_params["generateMethod"]
         n = int(request.query_params["n"])
 
@@ -56,6 +59,33 @@ class GenerateGraph(APIView):
         data = json_graph.node_link_data(g)
         return Response(data)
 
+class Algorithm(APIView):
+    def get(self, request, format=None):
+        print(request.query_params)
+        algorithm_id = request.query_params["algorithmMethod"]
+        current_graph = request.query_params["currentGraph"]
+        current_infection = request.query_params["currentInfection"]
+        current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
+        current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
+
+        algorithm_methods = {
+        '1': AlgorithmSZ,
+        '2': AlgorithmNetsleuth
+        }
+        """kwargs = {
+        '1': {v: 1},
+        '2': {proba: 0.9}
+        }"""
+        algo = algorithm_methods[algorithm_id]()
+
+        source = -1 # Default
+        if algorithm_id == '1':
+            source = algo.run(current_graph, current_infection, v=1)
+        if algorithm_id == '2':
+            source = algo.run(current_graph, current_infection)[0]
+
+
+        return Response({'source': source})
 
 ######################################################################
 # Index
