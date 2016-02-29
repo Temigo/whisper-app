@@ -123,6 +123,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
+STATICFILES_DIRS = (
+    '/home/temigo/whisper-app-client/dist/',
+)
 
 # For file upload
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
