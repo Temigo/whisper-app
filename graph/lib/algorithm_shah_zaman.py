@@ -58,7 +58,7 @@ class AlgorithmSZ:
             if r[node] > max_rumor_centrality:
                 source_estimation = node
                 max_rumor_centrality = r[node]
-        return source_estimation
+        return [source_estimation]
 
     @staticmethod
     def compute_permitted_permutations(origin_tree, v):

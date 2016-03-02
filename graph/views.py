@@ -41,7 +41,6 @@ class GenerateGraph(APIView):
 
         generate_method_id = generate_method["id"]
         params = generate_method["params"]
-        #n = int(request.query_params["n"])
         generate_params = ()
         for param in params:
             generate_params = generate_params + (param['value'],)
@@ -105,33 +104,46 @@ class SimulateInfection(APIView):
 class Algorithm(APIView):
     def get(self, request, format=None):
         print(request.query_params)
-        algorithm_id = request.query_params["algorithmMethod"]
+        algorithmMethod = json.loads(request.query_params["algorithmMethod"].encode('utf-8'))
+        algorithm_id = algorithmMethod['id']
         current_graph = request.query_params["currentGraph"]
         current_infection = request.query_params["currentInfection"]
         current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
         current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
 
+        params = algorithmMethod["params"]
+        algorithm_params = ()
+        for param in params:
+            if ('selectNodes' in param):
+                algorithm_params = algorithm_params + (param['nodes'],)
+            else:
+                algorithm_params = algorithm_params + (param['value'],)
+
+        print(algorithm_params)
         algorithm_methods = {
-        '1': AlgorithmSZ,
-        '2': AlgorithmNetsleuth,
-        '3': AlgorithmPinto,
-        '4': AlgorithmFC
+        1: AlgorithmSZ,
+        2: AlgorithmNetsleuth,
+        3: AlgorithmPinto,
+        4: AlgorithmFC
         }
         algo = algorithm_methods[algorithm_id]()
 
-        source = -1 # Default
         start_time = timeit.default_timer()
-        if algorithm_id == '1':
-            source = algo.run(current_graph, current_infection, v=int(request.query_params["v"]))
-        if algorithm_id == '2':
-            source = algo.run(current_graph, current_infection)[0]
+        #if algorithm_id == '1':
+        #    source = algo.run(current_graph, current_infection, v=int(request.query_params["v"]))
+        #if algorithm_id == '2':
+        #    source = algo.run(current_graph, current_infection)[0]
+        sources = algo.run(current_graph, current_infection, *algorithm_params)
         #if algorithm_id == '3':
         #    source = algo.run(current_graph, request.query_params["observers"], request.query_params["mean"], request.query_params["variance"])
         #if algorithm_id == '4':
         #    source = algo.run(current_graph, current_infection)[0]
         time_elapsed = timeit.default_timer() - start_time
 
-        return Response({'source': source, 'timeElapsed': time_elapsed})
+        if sources:
+            return Response({'source': sources[0], 'timeElapsed': time_elapsed})
+        else:
+            return Response({'source': -1, 'timeElapsed': time_elapsed})
 
 ######################################################################
 def import_algorithm(request):
