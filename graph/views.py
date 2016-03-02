@@ -19,6 +19,7 @@ from .lib.algorithm_shah_zaman import AlgorithmSZ
 from .lib.algorithm_netsleuth import AlgorithmNetsleuth
 from .lib.algorithm_pinto import AlgorithmPinto
 from .lib.algorithm_fioriti_chinnici import AlgorithmFC
+from .lib import randomInfection
 
 class GraphViewSet(viewsets.ModelViewSet):
     """
@@ -36,20 +37,42 @@ class InfectionViewSet(viewsets.ModelViewSet):
 
 class GenerateGraph(APIView):
     def get(self, request, format=None):
-        generate_method_id = request.query_params["generateMethod"]
-        n = int(request.query_params["n"])
+        generate_method = json.loads(request.query_params["generateMethod"].encode('utf-8'))
+
+        generate_method_id = generate_method["id"]
+        params = generate_method["params"]
+        #n = int(request.query_params["n"])
+        generate_params = ()
+        for param in params:
+            generate_params = generate_params + (param['value'],)
 
         generate_methods = {
-        '1': nx.complete_graph,
-        '2': nx.cycle_graph,
-        '3': nx.circular_ladder_graph,
-        '4': nx.dorogovtsev_goltsev_mendes_graph,
-        '5': nx.empty_graph,
-        '6': nx.hypercube_graph,
-        '7': nx.ladder_graph,
-        '8': nx.path_graph,
-        '9': nx.star_graph,
-        '10': nx.wheel_graph
+        1: nx.complete_graph,
+        2: nx.cycle_graph,
+        3: nx.circular_ladder_graph,
+        4: nx.dorogovtsev_goltsev_mendes_graph,
+        5: nx.empty_graph,
+        6: nx.hypercube_graph,
+        7: nx.ladder_graph,
+        8: nx.path_graph,
+        9: nx.star_graph,
+        10: nx.wheel_graph,
+        11: nx.balanced_tree,
+        12: nx.barbell_graph,
+        13: nx.grid_2d_graph,
+        14: nx.lollipop_graph,
+        15: nx.margulis_gabber_galil_graph,
+        16: nx.chordal_cycle_graph,
+        17: nx.bull_graph,
+        18: nx.chvatal_graph,
+        19: nx.moebius_kantor_graph,
+        20: nx.karate_club_graph,
+        21: nx.davis_southern_women_graph,
+        22: nx.florentine_families_graph,
+        23: nx.caveman_graph,
+        24: nx.fast_gnp_random_graph,
+        25: nx.newman_watts_strogatz_graph,
+        26: nx.barabasi_albert_graph
         }
 
         try:
@@ -57,9 +80,27 @@ class GenerateGraph(APIView):
         except KeyError:
             raise Http404('Generation method doesn\'t exist.')
 
-        g = generate_method(n)
+        #g = generate_method(n)
+        g = generate_method(*generate_params)
         data = json_graph.node_link_data(g)
         return Response(data)
+
+class SimulateInfection(APIView):
+    def get(self, request, format=None):
+        print(request.query_params)
+        current_graph = request.query_params["currentGraph"]
+        current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
+        seeds = json.loads(request.query_params["seeds"].encode('utf-8'))
+        seeds = seeds["data"]
+        print(seeds)
+        ratio = float(request.query_params["ratio"])
+        proba = float(request.query_params["proba"])
+        print(ratio, proba)
+
+        infection = randomInfection.Infection()
+        infection_graph = infection.run(current_graph, seeds, ratio, proba)
+
+        return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
 class Algorithm(APIView):
     def get(self, request, format=None):

@@ -13,5 +13,6 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^generate/$', views.GenerateGraph.as_view()),
     url(r'^algorithm/$', views.Algorithm.as_view()),
+    url(r'^simulate/$', views.SimulateInfection.as_view()),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
