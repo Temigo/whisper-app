@@ -37,7 +37,7 @@ class AlgorithmPinto:
     def __init__(self):
         pass
 
-    def run(self, G, O, mi, sigma2):
+    def run(self, G, I, O, mi, sigma2):
         """
         Main
         :param G: graph
