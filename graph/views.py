@@ -141,7 +141,7 @@ class Algorithm(APIView):
         time_elapsed = timeit.default_timer() - start_time
 
         if sources:
-            return Response({'source': sources[0], 'timeElapsed': time_elapsed})
+            return Response({'source': sources, 'timeElapsed': time_elapsed})
         else:
             return Response({'source': -1, 'timeElapsed': time_elapsed})
 
