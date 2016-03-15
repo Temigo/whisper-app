@@ -37,7 +37,7 @@ class AlgorithmPinto:
     def __init__(self):
         pass
 
-    def run(self, G, I, O, mi, sigma2):
+    def run(self, G1, G, O, mi, sigma2):
         """
         Main
         :param G: graph
@@ -46,6 +46,9 @@ class AlgorithmPinto:
         :param sigma2: variance
         :return:
         """
+        if len(O) < 2: # We need at least 2 observers
+            raise Exception("[Pinto] Not enough observers !")
+
         # TODO : consider only active observers !
         first_node = O[0]
 
@@ -65,7 +68,7 @@ class AlgorithmPinto:
             if F > max:
                 max = F
                 source = s
-        return source
+        return [source]
 
     # MAIN_FUNCTION S to be calculated
     def main_function(self, s, O, d, T, mi, sigma2):
@@ -89,7 +92,7 @@ class AlgorithmPinto:
     def observed_delay(g, O):
         d = numpy.zeros(shape=(len(O)-1, 1))
         for i in range(len(O) - 1):
-            d[i][0] = g.node[O[i + 1]]['time'] - g.node[O[i]]['time']
+            d[i][0] = g.node[O[i + 1]]['infection_time'] - g.node[O[i]]['infection_time']
         return d
 
     # calculates array mi_s (deterministic delay)

@@ -26,20 +26,22 @@ class Infection:
         infected = nx.Graph()
 
         for seed in seeds:
-            infected.add_node(seed)
+            infected.add_node(seed, infection_time=0)
         for node in infected:
             for neighbor in G.neighbors(node):
                 if not infected.has_node(neighbor):
                     frontier.add_node(neighbor)
         seeds = []
+        i = 0
         while len(infected.node) < ratio * len(G.node):
-            self.ripple_step(G, frontier, infected, prob)
+            i += 1
+            self.ripple_step(G, frontier, infected, prob, i)
 
         self.edging(G, infected)
 
         return infected
 
-    def ripple_step(self, G, frontier, infected, prob):
+    def ripple_step(self, G, frontier, infected, prob, current_time):
         """ Generating a step in the infection simulation"""
 
         # List containing the nodes from the frontier at time t with k
@@ -77,7 +79,7 @@ class Infection:
         # Updating the frontier
         for j in infected_t:
             for node in j:
-                infected.add_node(node)
+                infected.add_node(node, infection_time=current_time)
                 frontier.remove_node(node)
                 for neighbor in G.neighbors(node):
                     if not infected.has_node(neighbor):

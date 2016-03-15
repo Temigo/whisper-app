@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.core.urlresolvers import reverse
 
 import json
+#import simplejson as json
 import timeit
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -79,8 +80,11 @@ class GenerateGraph(APIView):
         except KeyError:
             raise Http404('Generation method doesn\'t exist.')
 
-        #g = generate_method(n)
         g = generate_method(*generate_params)
+        # Because otherwise json dumps tuples as lists
+        if generate_method_id in [6, 13]:
+            g = nx.convert_node_labels_to_integers(g)
+
         data = json_graph.node_link_data(g)
         return Response(data)
 
@@ -91,14 +95,13 @@ class SimulateInfection(APIView):
         current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
         seeds = json.loads(request.query_params["seeds"].encode('utf-8'))
         seeds = seeds["data"]
-        print(seeds)
         ratio = float(request.query_params["ratio"])
         proba = float(request.query_params["proba"])
-        print(ratio, proba)
 
         infection = randomInfection.Infection()
         infection_graph = infection.run(current_graph, seeds, ratio, proba)
 
+        print(json_graph.node_link_data(infection_graph))
         return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
 class Algorithm(APIView):
