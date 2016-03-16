@@ -113,6 +113,7 @@ class Algorithm(APIView):
         current_infection = request.query_params["currentInfection"]
         current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
         current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
+        times = int(request.query_params["times"])
 
         params = algorithmMethod["params"]
         algorithm_params = ()
@@ -131,17 +132,20 @@ class Algorithm(APIView):
         }
         algo = algorithm_methods[algorithm_id]()
 
-        start_time = timeit.default_timer()
-        #if algorithm_id == '1':
-        #    source = algo.run(current_graph, current_infection, v=int(request.query_params["v"]))
-        #if algorithm_id == '2':
-        #    source = algo.run(current_graph, current_infection)[0]
-        sources = algo.run(current_graph, current_infection, *algorithm_params)
-        #if algorithm_id == '3':
-        #    source = algo.run(current_graph, request.query_params["observers"], request.query_params["mean"], request.query_params["variance"])
-        #if algorithm_id == '4':
-        #    source = algo.run(current_graph, current_infection)[0]
-        time_elapsed = timeit.default_timer() - start_time
+        time_elapsed = []
+        sources = []
+        for i in range(times):
+            start_time = timeit.default_timer()
+            #if algorithm_id == '1':
+            #    source = algo.run(current_graph, current_infection, v=int(request.query_params["v"]))
+            #if algorithm_id == '2':
+            #    source = algo.run(current_graph, current_infection)[0]
+            sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
+            #if algorithm_id == '3':
+            #    source = algo.run(current_graph, request.query_params["observers"], request.query_params["mean"], request.query_params["variance"])
+            #if algorithm_id == '4':
+            #    source = algo.run(current_graph, current_infection)[0]
+            time_elapsed.append(timeit.default_timer() - start_time)
 
         if sources:
             return Response({'source': sources, 'timeElapsed': time_elapsed})
