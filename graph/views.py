@@ -20,7 +20,7 @@ from .lib.algorithm_shah_zaman import AlgorithmSZ
 from .lib.algorithm_netsleuth import AlgorithmNetsleuth
 from .lib.algorithm_pinto import AlgorithmPinto
 from .lib.algorithm_fioriti_chinnici import AlgorithmFC
-from .lib import randomInfection
+from .lib import randomInfection, forceFrontier
 
 class GraphViewSet(viewsets.ModelViewSet):
     """
@@ -151,6 +151,15 @@ class Algorithm(APIView):
             return Response({'source': sources, 'timeElapsed': time_elapsed})
         else:
             return Response({'source': -1, 'timeElapsed': time_elapsed})
+
+class Frontier(APIView):
+    def get(self, request, format=None):
+        print(request.query_params)
+        current_infection = request.query_params["currentInfection"]
+        current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
+
+        f = forceFrontier.ForceFrontier()
+        return Response({'convexHull' : f.run(current_infection)})
 
 ######################################################################
 def import_algorithm(request):
