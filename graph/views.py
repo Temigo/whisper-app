@@ -3,7 +3,6 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.core.urlresolvers import reverse
 
 import json
-#import simplejson as json
 import timeit
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -172,25 +171,6 @@ def import_algorithm(request):
 
         else:
             print("Not good")
-            return index(request)
-    else:
-        return index(request)
-
-######################################################################
-def import_infection(request):
-    if request.method == 'POST':
-        f = request.FILES['import_infection']
-        # f.name
-        if f.content_type == 'application/json':
-            #with open('import_graph.json', 'wb+') as destination:
-                #for chunk in f.chunks():
-                #    destination.write(chunk)
-                #
-                #destination.close()
-            data = json.load(f)
-            return index(request, auto=False, data_infection=data)
-
-        else:
             return index(request)
     else:
         return index(request)

@@ -23,7 +23,7 @@ from . import views
 router = routers.DefaultRouter()
 
 urlpatterns = [
-    url(r'^$', views.home, name='home'),
+    #url(r'^$', views.home, name='home'),
     url(r'^graph/', include('graph.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
