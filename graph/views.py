@@ -1,150 +1,156 @@
 from django.shortcuts import get_object_or_404, render
-
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.core.urlresolvers import reverse
-from .models import Graph, Infection
 
 import json
+import timeit
 import networkx as nx
 from networkx.readwrite import json_graph
 
-######################################################################
-# Index
-def index(request, auto=True, auto_infection=True, data=None, data_infection=None):
+
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .serializers import GraphSerializer, InfectionSerializer
+from .models import Graph, Infection
+
+from .lib.algorithm_shah_zaman import AlgorithmSZ
+from .lib.algorithm_netsleuth import AlgorithmNetsleuth
+from .lib.algorithm_pinto import AlgorithmPinto
+from .lib.algorithm_fioriti_chinnici import AlgorithmFC
+from .lib import randomInfection
+
+class GraphViewSet(viewsets.ModelViewSet):
     """
-    Index page - default
+    API end-point for graphs
     """
-    #request.session.flush()
+    queryset = Graph.objects.all()
+    serializer_class = GraphSerializer
 
-    # Define Current index
-    current_index = request.session.get('current_index', 0)
-    current_index_infection = request.session.get('current_index_infection', 0)
-
-    if request.method == 'POST':
-    	if request.POST.get('request') == 'new_graph':
-    	    pass
-        if request.POST.get('request') == 'existing_graph':
-            current_index = int(request.POST.get('graph_id'))-1
-            request.session.__setitem__('current_index', current_index)
-        if request.POST.get('request') == 'infection':
-            current_index_infection = int(request.POST.get('infection_id'))-1
-            request.session.__setitem__('current_index_infection', current_index_infection)
-
-    # Latest graph/infection lists
-    latest_graph_list = Graph.objects.order_by('id')
-    latest_infection_list = Infection.objects.filter(graph=latest_graph_list[current_index]).order_by('id')
-
-    # Define Context
-    context = {'latest_graph_list': latest_graph_list,
-    'latest_infection_list': latest_infection_list,
-    'nodes': None,
-    'links': None,
-    'infected_nodes': [],
-    'current_index': current_index+1,
-    'current_index_infection': current_index_infection+1}
-
-    if auto:
-        #current_graph_data = None
-        #current_infection_graph_data = None
-        current_graph_data = latest_graph_list[current_index].data
-    else:
-        current_graph_data = data
-
-    if auto_infection:
-        if latest_infection_list:
-            current_infection_graph_data = latest_infection_list[current_index_infection].data
-            context['infected_nodes'] = json.dumps(current_infection_graph_data["nodes"])
-    else:
-        current_infection_graph_data = data_infection
-        
-    context['nodes'] = json.dumps(current_graph_data["nodes"])
-    context['links'] = json.dumps(current_graph_data["links"])
-
-    request.session.__setitem__('data', current_graph_data)
-
-    return render(request, 'graph/index.html', context)
-
-######################################################################
-def generate(request):
+class InfectionViewSet(viewsets.ModelViewSet):
     """
-    Generate graph
+    API end-point for graphs
     """
-    if request.method == 'POST':
-        generate_method_id = request.POST.get('generate_method')
-        # FIXME : check if it is a number
-        n = int(request.POST.get('generate_n'))
+    queryset = Infection.objects.all()
+    serializer_class = InfectionSerializer
+
+class GenerateGraph(APIView):
+    def get(self, request, format=None):
+        generate_method = json.loads(request.query_params["generateMethod"].encode('utf-8'))
+
+        generate_method_id = generate_method["id"]
+        params = generate_method["params"]
+        generate_params = ()
+        for param in params:
+            generate_params = generate_params + (param['value'],)
+
         generate_methods = {
-        '1': nx.complete_graph,
-        '2': nx.cycle_graph,
-        '3': nx.circular_ladder_graph,
-        '4': nx.dorogovtsev_goltsev_mendes_graph,
-        '5': nx.empty_graph,
-        '6': nx.hypercube_graph,
-        '7': nx.ladder_graph,
-        '8': nx.path_graph,
-        '9': nx.star_graph,
-        '10': nx.wheel_graph
+        1: nx.complete_graph,
+        2: nx.cycle_graph,
+        3: nx.circular_ladder_graph,
+        4: nx.dorogovtsev_goltsev_mendes_graph,
+        5: nx.empty_graph,
+        6: nx.hypercube_graph,
+        7: nx.ladder_graph,
+        8: nx.path_graph,
+        9: nx.star_graph,
+        10: nx.wheel_graph,
+        11: nx.balanced_tree,
+        12: nx.barbell_graph,
+        13: nx.grid_2d_graph,
+        14: nx.lollipop_graph,
+        15: nx.margulis_gabber_galil_graph,
+        16: nx.chordal_cycle_graph,
+        17: nx.bull_graph,
+        18: nx.chvatal_graph,
+        19: nx.moebius_kantor_graph,
+        20: nx.karate_club_graph,
+        21: nx.davis_southern_women_graph,
+        22: nx.florentine_families_graph,
+        23: nx.caveman_graph,
+        24: nx.fast_gnp_random_graph,
+        25: nx.newman_watts_strogatz_graph,
+        26: nx.barabasi_albert_graph
         }
+
         try:
             generate_method = generate_methods[generate_method_id]
         except KeyError:
             raise Http404('Generation method doesn\'t exist.')
-        n = min(max(n, 0), 100000)
-        g = generate_method(n)
+
+        g = generate_method(*generate_params)
+        # Because otherwise json dumps tuples as lists
+        if generate_method_id in [6, 13]:
+            g = nx.convert_node_labels_to_integers(g)
+
         data = json_graph.node_link_data(g)
-        return index(request, auto=False, data=data)
-    else:
-        return index(request)
+        return Response(data)
 
-######################################################################
-def importing(request):
-    """
-    Import graph (JSON)
-    """
-    if request.method == 'POST':
-        f = request.FILES['import_graph']
-        # f.name
-        if f.content_type == 'application/json':
-            #with open('import_graph.json', 'wb+') as destination:
-                #for chunk in f.chunks():
-                #    destination.write(chunk)
-                #
-                #destination.close()
-            data = json.load(f)
-            return index(request, auto=False, data=data)
+class SimulateInfection(APIView):
+    def get(self, request, format=None):
+        print(request.query_params)
+        current_graph = request.query_params["currentGraph"]
+        current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
+        seeds = json.loads(request.query_params["seeds"].encode('utf-8'))
+        seeds = seeds["data"]
+        ratio = float(request.query_params["ratio"])
+        proba = float(request.query_params["proba"])
 
+        infection = randomInfection.Infection()
+        infection_graph = infection.run(current_graph, seeds, ratio, proba)
+
+        print(json_graph.node_link_data(infection_graph))
+        return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
+
+class Algorithm(APIView):
+    def get(self, request, format=None):
+        print(request.query_params)
+        algorithmMethod = json.loads(request.query_params["algorithmMethod"].encode('utf-8'))
+        algorithm_id = algorithmMethod['id']
+        current_graph = request.query_params["currentGraph"]
+        current_infection = request.query_params["currentInfection"]
+        current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
+        current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
+        times = int(request.query_params["times"])
+
+        params = algorithmMethod["params"]
+        algorithm_params = ()
+        for param in params:
+            if ('selectNodes' in param):
+                algorithm_params = algorithm_params + (param['nodes'],)
+            else:
+                algorithm_params = algorithm_params + (param['value'],)
+
+        print(algorithm_params)
+        algorithm_methods = {
+        1: AlgorithmSZ,
+        2: AlgorithmNetsleuth,
+        3: AlgorithmPinto,
+        4: AlgorithmFC
+        }
+        algo = algorithm_methods[algorithm_id]()
+
+        time_elapsed = []
+        sources = []
+        for i in range(times):
+            start_time = timeit.default_timer()
+            #if algorithm_id == '1':
+            #    source = algo.run(current_graph, current_infection, v=int(request.query_params["v"]))
+            #if algorithm_id == '2':
+            #    source = algo.run(current_graph, current_infection)[0]
+            sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
+            #if algorithm_id == '3':
+            #    source = algo.run(current_graph, request.query_params["observers"], request.query_params["mean"], request.query_params["variance"])
+            #if algorithm_id == '4':
+            #    source = algo.run(current_graph, current_infection)[0]
+            time_elapsed.append(timeit.default_timer() - start_time)
+
+        if sources:
+            return Response({'source': sources, 'timeElapsed': time_elapsed})
         else:
-            return index(request)
-    else:
-        return index(request)
-
-######################################################################
-def export_graph(request):
-    """
-    Export graph (JSON)
-    """
-    data = request.session.get('data')
-    s = json.dumps(data)
-
-    response = HttpResponse(s, content_type='application/json')
-    response['Content-Disposition'] = 'attachment; filename="graph.json"'
-    return response
-
-######################################################################
-def export_infection(request):
-    pass
-
-def detail(request, graph_id):
-    graph = get_object_or_404(Graph, pk=graph_id)
-    return render(request, 'graph/detail.html', {'graph': graph})
-
-def select(request, graph_id):
-    graph = get_object_or_404(Graph, pk=graph_id)
-    return HttpResponseRedirect(reverse('graph:result', args=(graph.id,)))
-
-def result(request, graph_id):
-    graph = get_object_or_404(Graph, pk=graph_id)
-    return render(request, 'graph/result.html', {'graph': graph})
+            return Response({'source': -1, 'timeElapsed': time_elapsed})
 
 ######################################################################
 def import_algorithm(request):
@@ -166,25 +172,6 @@ def import_algorithm(request):
 
         else:
             print("Not good")
-            return index(request)
-    else:
-        return index(request)
-
-######################################################################
-def import_infection(request):
-    if request.method == 'POST':
-        f = request.FILES['import_infection']
-        # f.name
-        if f.content_type == 'application/json':
-            #with open('import_graph.json', 'wb+') as destination:
-                #for chunk in f.chunks():
-                #    destination.write(chunk)
-                #
-                #destination.close()
-            data = json.load(f)
-            return index(request, auto=True, auto_infection=False, data_infection=data)
-
-        else:
             return index(request)
     else:
         return index(request)
