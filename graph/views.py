@@ -13,7 +13,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.parsers import MultiPartParser
 from .serializers import GraphSerializer, InfectionSerializer
 from .models import Graph, Infection
 
@@ -40,6 +40,27 @@ class InfectionViewSet(viewsets.ModelViewSet):
     """
     queryset = Infection.objects.all()
     serializer_class = InfectionSerializer
+
+class ImportGraph(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, format=None):
+        file_obj = request.data['file']
+        logger.info("Post Graph")
+        logger.debug(file_obj)
+
+        graph = None
+        data = {}
+        if file_obj.name.endswith('.paj') or file_obj.name.endswith('.net'):
+            graph = nx.read_pajek(file_obj)
+            graph.name = file_obj.name # FIXME
+            data = json_graph.node_link_data(graph)
+        if file_obj.name.endswith('.json'):
+            data = json.load(file_obj)
+
+
+        #logger.debug(data)
+        return Response(data)
 
 class GenerateGraph(APIView):
     def get(self, request, format=None):

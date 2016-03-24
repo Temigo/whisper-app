@@ -9,6 +9,7 @@ import json
 class Graph(models.Model):
     name = models.CharField(max_length=200)
     data = JSONField(default='{}', blank=True, null=True)
+    description = models.TextField(default='')
 
     def __str__(self):
         return self.name
@@ -23,6 +24,6 @@ class Infection(models.Model):
 
     def __str__(self):
         return self.name
-        
+
     def json_dumps(self):
         return json.dumps(self.data)
