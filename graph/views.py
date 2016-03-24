@@ -6,7 +6,8 @@ import json
 import timeit
 import networkx as nx
 from networkx.readwrite import json_graph
-
+import logging
+import coloredlogs
 
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
@@ -21,6 +22,10 @@ from .lib.algorithm_netsleuth import AlgorithmNetsleuth
 from .lib.algorithm_pinto import AlgorithmPinto
 from .lib.algorithm_fioriti_chinnici import AlgorithmFC
 from .lib import randomInfection, forceFrontier
+
+#logging.basicConfig(level=logging.DEBUG)
+coloredlogs.install(level='DEBUG')
+logger = logging.getLogger(__name__)
 
 class GraphViewSet(viewsets.ModelViewSet):
     """
@@ -38,8 +43,8 @@ class InfectionViewSet(viewsets.ModelViewSet):
 
 class GenerateGraph(APIView):
     def get(self, request, format=None):
+        logger.info("Generate Graph")
         generate_method = json.loads(request.query_params["generateMethod"].encode('utf-8'))
-
         generate_method_id = generate_method["id"]
         params = generate_method["params"]
         generate_params = ()
@@ -78,6 +83,7 @@ class GenerateGraph(APIView):
         try:
             generate_method = generate_methods[generate_method_id]
         except KeyError:
+            logger.error('Generation method doesn\'t exist.')
             raise Http404('Generation method doesn\'t exist.')
 
         g = generate_method(*generate_params)
@@ -90,7 +96,8 @@ class GenerateGraph(APIView):
 
 class SimulateInfection(APIView):
     def get(self, request, format=None):
-        print(request.query_params)
+        logger.info("Simulate infection")
+        logger.debug(request.query_params)
         current_graph = request.query_params["currentGraph"]
         current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
         seeds = json.loads(request.query_params["seeds"].encode('utf-8'))
@@ -101,12 +108,13 @@ class SimulateInfection(APIView):
         infection = randomInfection.Infection()
         infection_graph = infection.run(current_graph, seeds, ratio, proba)
 
-        print(json_graph.node_link_data(infection_graph))
+        logger.debug(json_graph.node_link_data(infection_graph))
         return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
 class Algorithm(APIView):
     def get(self, request, format=None):
-        print(request.query_params)
+        logger.info("Apply algorithm")
+        logger.debug(request.query_params)
         algorithmMethod = json.loads(request.query_params["algorithmMethod"].encode('utf-8'))
         algorithm_id = algorithmMethod['id']
         current_graph = request.query_params["currentGraph"]
@@ -123,7 +131,7 @@ class Algorithm(APIView):
             else:
                 algorithm_params = algorithm_params + (param['value'],)
 
-        print(algorithm_params)
+        logger.debug(algorithm_params)
         algorithm_methods = {
         1: AlgorithmSZ,
         2: AlgorithmNetsleuth,
@@ -136,25 +144,18 @@ class Algorithm(APIView):
         sources = []
         for i in range(times):
             start_time = timeit.default_timer()
-            #if algorithm_id == '1':
-            #    source = algo.run(current_graph, current_infection, v=int(request.query_params["v"]))
-            #if algorithm_id == '2':
-            #    source = algo.run(current_graph, current_infection)[0]
             sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
-            #if algorithm_id == '3':
-            #    source = algo.run(current_graph, request.query_params["observers"], request.query_params["mean"], request.query_params["variance"])
-            #if algorithm_id == '4':
-            #    source = algo.run(current_graph, current_infection)[0]
             time_elapsed.append(timeit.default_timer() - start_time)
 
-        if sources:
-            return Response({'source': sources, 'timeElapsed': time_elapsed})
-        else:
-            return Response({'source': -1, 'timeElapsed': time_elapsed})
+        #d = {}
+        #for source in sources:
+        #    d[source] = nx.astar_path_length(current_graph, real_source, source)
+
+        return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed})
 
 class Frontier(APIView):
     def get(self, request, format=None):
-        print(request.query_params)
+        logger.debug(request.query_params)
         current_infection = request.query_params["currentInfection"]
         current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
 
