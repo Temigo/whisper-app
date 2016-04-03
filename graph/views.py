@@ -21,6 +21,7 @@ from .lib.algorithm_shah_zaman import AlgorithmSZ
 from .lib.algorithm_netsleuth import AlgorithmNetsleuth
 from .lib.algorithm_pinto import AlgorithmPinto
 from .lib.algorithm_fioriti_chinnici import AlgorithmFC
+from .lib.algorithm_remi import AlgorithmRemi
 from .lib import randomInfection, forceFrontier
 
 #logging.basicConfig(level=logging.DEBUG)
@@ -57,7 +58,7 @@ class ImportGraph(APIView):
             data = json_graph.node_link_data(graph)
         elif file_obj.name.endswith('.json'):
             data = json.load(file_obj)
-        
+
 
         #logger.debug(data)
         return Response(data)
@@ -157,7 +158,8 @@ class Algorithm(APIView):
         1: AlgorithmSZ,
         2: AlgorithmNetsleuth,
         3: AlgorithmPinto,
-        4: AlgorithmFC
+        4: AlgorithmFC,
+        5: AlgorithmRemi
         }
         algo = algorithm_methods[algorithm_id]()
 

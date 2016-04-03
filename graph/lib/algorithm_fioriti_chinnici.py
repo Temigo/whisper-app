@@ -13,7 +13,7 @@ class AlgorithmFC:
         pass
 
     @staticmethod
-    def run(graph):
+    def run(graph, graph_i):
         """
         :param graph:
         :type graph: nx.Graph
@@ -24,7 +24,7 @@ class AlgorithmFC:
         max_node = None
 
         for node in graph:
-            if graph.node[node]['infected']:
+            if node in graph_i:
                 # Compute Dynamical Age (DA) of node
                 g2 = graph.copy()
                 g2.remove_node(node)
@@ -37,4 +37,4 @@ class AlgorithmFC:
                     max_node = node
 
         # TODO sort and return k most likely sources
-        return max_node
+        return [max_node]
