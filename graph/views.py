@@ -55,9 +55,9 @@ class ImportGraph(APIView):
             graph = nx.read_pajek(file_obj)
             graph.name = file_obj.name # FIXME
             data = json_graph.node_link_data(graph)
-        if file_obj.name.endswith('.json'):
+        elif file_obj.name.endswith('.json'):
             data = json.load(file_obj)
-
+        
 
         #logger.debug(data)
         return Response(data)
