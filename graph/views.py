@@ -25,8 +25,9 @@ from .lib.algorithm_remi import AlgorithmRemi
 from .lib import randomInfection, forceFrontier
 
 #logging.basicConfig(level=logging.DEBUG)
-coloredlogs.install(level='DEBUG')
-logger = logging.getLogger(__name__)
+# coloredlogs.install(level='DEBUG')
+# logger = logging.getLogger(__name__)
+#logger.propagate = False # Not enabled yet
 
 class GraphViewSet(viewsets.ModelViewSet):
     """
@@ -47,8 +48,8 @@ class ImportGraph(APIView):
 
     def post(self, request, format=None):
         file_obj = request.data['file']
-        logger.info("Post Graph")
-        logger.debug(file_obj)
+        # logger.info("Post Graph")
+        # logger.debug(file_obj)
 
         graph = None
         data = {}
@@ -65,7 +66,7 @@ class ImportGraph(APIView):
 
 class GenerateGraph(APIView):
     def get(self, request, format=None):
-        logger.info("Generate Graph")
+        # logger.info("Generate Graph")
         generate_method = json.loads(request.query_params["generateMethod"].encode('utf-8'))
         generate_method_id = generate_method["id"]
         params = generate_method["params"]
@@ -105,7 +106,7 @@ class GenerateGraph(APIView):
         try:
             generate_method = generate_methods[generate_method_id]
         except KeyError:
-            logger.error('Generation method doesn\'t exist.')
+            # logger.error('Generation method doesn\'t exist.')
             raise Http404('Generation method doesn\'t exist.')
 
         g = generate_method(*generate_params)
@@ -118,8 +119,8 @@ class GenerateGraph(APIView):
 
 class SimulateInfection(APIView):
     def get(self, request, format=None):
-        logger.info("Simulate infection")
-        logger.debug(request.query_params)
+        # logger.info("Simulate infection")
+        # logger.debug(request.query_params)
         current_graph = request.query_params["currentGraph"]
         current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
         seeds = json.loads(request.query_params["seeds"].encode('utf-8'))
@@ -130,13 +131,13 @@ class SimulateInfection(APIView):
         infection = randomInfection.Infection()
         infection_graph = infection.run(current_graph, seeds, ratio, proba)
 
-        logger.debug(json_graph.node_link_data(infection_graph))
+        # logger.debug(json_graph.node_link_data(infection_graph))
         return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
 class Algorithm(APIView):
     def get(self, request, format=None):
-        logger.info("Apply algorithm")
-        logger.debug(request.query_params)
+        # logger.info("Apply algorithm")
+        # logger.debug(request.query_params)
         algorithmMethod = json.loads(request.query_params["algorithmMethod"].encode('utf-8'))
         algorithm_id = algorithmMethod['id']
         current_graph = request.query_params["currentGraph"]
@@ -153,7 +154,7 @@ class Algorithm(APIView):
             else:
                 algorithm_params = algorithm_params + (param['value'],)
 
-        logger.debug(algorithm_params)
+        # logger.debug(algorithm_params)
         algorithm_methods = {
         1: AlgorithmSZ,
         2: AlgorithmNetsleuth,
@@ -178,7 +179,7 @@ class Algorithm(APIView):
 
 class Frontier(APIView):
     def get(self, request, format=None):
-        logger.debug(request.query_params)
+        # logger.debug(request.query_params)
         current_infection = request.query_params["currentInfection"]
         current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
 
