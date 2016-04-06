@@ -58,7 +58,7 @@ class AlgorithmRemi:
 		source = None
 		min_M = sys.maxint
 		for s in G:
-			M = self.mean(G,s)
+			M = self.mean(G_i,s)
 			#print(str(s)+": "+str(M)) # prints "node number: mean of infection times"
 			if (M < min_M):
 				source = s
