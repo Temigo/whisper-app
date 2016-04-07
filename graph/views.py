@@ -114,7 +114,11 @@ class GenerateGraph(APIView):
         if generate_method_id in [6, 13]:
             g = nx.convert_node_labels_to_integers(g)
 
-        data = json_graph.node_link_data(g)
+        positions = {}
+        if g.number_of_nodes() <= 1000:
+            positions = nx.spring_layout(g)
+        print positions
+        data = {'graph': json_graph.node_link_data(g), 'positions': positions}
         return Response(data)
 
 class SimulateInfection(APIView):
