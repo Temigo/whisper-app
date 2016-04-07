@@ -135,7 +135,6 @@ class SimulateInfection(APIView):
 
         infection = randomInfection.Infection()
         infection_graph = infection.run(current_graph, seeds, ratio, proba)
-
         # logger.debug(json_graph.node_link_data(infection_graph))
         return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
@@ -147,8 +146,8 @@ class Algorithm(APIView):
         algorithm_id = algorithmMethod['id']
         current_graph = request.data["currentGraph"]
         current_infection = request.data["currentInfection"]
-        current_graph = json_graph.node_link_graph(json.loads(current_graph))
-        current_infection = json_graph.node_link_graph(json.loads(current_infection))
+        current_graph = json_graph.node_link_graph(current_graph)
+        current_infection = json_graph.node_link_graph(current_infection)
         times = int(request.data["times"])
 
 

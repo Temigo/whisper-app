@@ -37,8 +37,10 @@ class Infection:
             i += 1
             self.ripple_step(G, frontier, infected, prob, i)
 
-        self.edging(G, infected)
-
+        #self.edging(G, infected)
+        infected = nx.Graph(G.subgraph(infected.nodes()))
+        print list(infected.nodes())
+        print list(infected.edges())
         return infected
 
     def ripple_step(self, G, frontier, infected, prob, current_time):
@@ -85,10 +87,3 @@ class Infection:
                     if not infected.has_node(neighbor):
                         frontier.add_node(neighbor)
         return
-
-    def edging(self, graph, graph_i):
-        """ Transposes the edges from graph to graph_i"""
-        for node in graph_i:
-            for neighbor in graph.neighbors(node):
-                if graph_i.has_node(neighbor):
-                    graph_i.add_edge(node, neighbor)
