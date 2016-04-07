@@ -23,6 +23,7 @@ from .lib.algorithm_pinto import AlgorithmPinto
 from .lib.algorithm_fioriti_chinnici import AlgorithmFC
 from .lib.algorithm_remi import AlgorithmRemi
 from .lib import randomInfection, forceFrontier
+from .lib.algorithm_remi_original import AlgorithmRemiOriginal
 
 #logging.basicConfig(level=logging.DEBUG)
 # coloredlogs.install(level='DEBUG')
@@ -65,9 +66,9 @@ class ImportGraph(APIView):
         return Response(data)
 
 class GenerateGraph(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         # logger.info("Generate Graph")
-        generate_method = json.loads(request.query_params["generateMethod"].encode('utf-8'))
+        generate_method = request.data["generateMethod"]
         generate_method_id = generate_method["id"]
         params = generate_method["params"]
         generate_params = ()
@@ -117,20 +118,20 @@ class GenerateGraph(APIView):
         positions = {}
         if g.number_of_nodes() <= 1000:
             positions = nx.spring_layout(g)
-        print positions
+
         data = {'graph': json_graph.node_link_data(g), 'positions': positions}
         return Response(data)
 
 class SimulateInfection(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         # logger.info("Simulate infection")
         # logger.debug(request.query_params)
-        current_graph = request.query_params["currentGraph"]
-        current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
-        seeds = json.loads(request.query_params["seeds"].encode('utf-8'))
+        current_graph = request.data["currentGraph"]
+        current_graph = json_graph.node_link_graph(current_graph)
+        seeds = request.data["seeds"]
         seeds = seeds["data"]
-        ratio = float(request.query_params["ratio"])
-        proba = float(request.query_params["proba"])
+        ratio = float(request.data["ratio"])
+        proba = float(request.data["proba"])
 
         infection = randomInfection.Infection()
         infection_graph = infection.run(current_graph, seeds, ratio, proba)
@@ -139,16 +140,17 @@ class SimulateInfection(APIView):
         return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
 class Algorithm(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         # logger.info("Apply algorithm")
-        # logger.debug(request.query_params)
-        algorithmMethod = json.loads(request.query_params["algorithmMethod"].encode('utf-8'))
+        # logger.debug(request.data)
+        algorithmMethod = request.data["algorithmMethod"]
         algorithm_id = algorithmMethod['id']
-        current_graph = request.query_params["currentGraph"]
-        current_infection = request.query_params["currentInfection"]
-        current_graph = json_graph.node_link_graph(json.loads(current_graph.encode('utf-8')))
-        current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
-        times = int(request.query_params["times"])
+        current_graph = request.data["currentGraph"]
+        current_infection = request.data["currentInfection"]
+        current_graph = json_graph.node_link_graph(json.loads(current_graph))
+        current_infection = json_graph.node_link_graph(json.loads(current_infection))
+        times = int(request.data["times"])
+
 
         params = algorithmMethod["params"]
         algorithm_params = ()
@@ -164,7 +166,8 @@ class Algorithm(APIView):
         2: AlgorithmNetsleuth,
         3: AlgorithmPinto,
         4: AlgorithmFC,
-        5: AlgorithmRemi
+        5: AlgorithmRemiOriginal,
+        6: AlgorithmRemi
         }
         algo = algorithm_methods[algorithm_id]()
 
@@ -182,10 +185,10 @@ class Algorithm(APIView):
         return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed})
 
 class Frontier(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         # logger.debug(request.query_params)
-        current_infection = request.query_params["currentInfection"]
-        current_infection = json_graph.node_link_graph(json.loads(current_infection.encode('utf-8')))
+        current_infection = request.data["currentInfection"]
+        current_infection = json_graph.node_link_graph(current_infection)
 
         f = forceFrontier.ForceFrontier()
         return Response({'convexHull' : f.run(current_infection)})
