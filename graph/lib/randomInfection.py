@@ -39,8 +39,6 @@ class Infection:
 
         #self.edging(G, infected)
         infected = nx.Graph(G.subgraph(infected.nodes()))
-        print list(infected.nodes())
-        print list(infected.edges())
         return infected
 
     def ripple_step(self, G, frontier, infected, prob, current_time):

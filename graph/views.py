@@ -8,6 +8,7 @@ import networkx as nx
 from networkx.readwrite import json_graph
 import logging
 import coloredlogs
+import numpy
 
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
@@ -150,6 +151,8 @@ class Algorithm(APIView):
         current_infection = json_graph.node_link_graph(current_infection)
         times = int(request.data["times"])
         seeds = request.data["seeds"]
+        ratio = request.data["ratio"] if request.data["ratio"] != 0 else 0.5
+        proba = request.data["proba"] if request.data["proba"] != 0 else 0.5
 
         params = algorithmMethod["params"]
         algorithm_params = ()
@@ -183,11 +186,19 @@ class Algorithm(APIView):
             distances[source] = {}
             for seed in seeds:
                 distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
-        #d = {}
-        #for source in sources:
-        #    d[source] = nx.astar_path_length(current_graph, real_source, source)
+        # Measurement 2 : Stability
+        infection = randomInfection.Infection()
+        datas = []
+        for seed in seeds:
+            for node in current_graph.neighbors(seed):
+                if node not in seeds:
+                    infection_graph = infection.run(current_graph, seeds+[node], ratio, proba)
+                    new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
+                    for source in new_sources:
+                        datas.append(nx.astar_path_length(current_graph, source, seed)) # TODO
+        datas = numpy.array(datas)
 
-        return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed, 'distances': distances})
+        return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed, 'distances': distances, 'mean': numpy.mean(datas) if datas.size else -1, 'variance': numpy.var(datas) if datas.size else -1})
 
 class Frontier(APIView):
     def post(self, request, format=None):

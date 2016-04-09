@@ -16,13 +16,12 @@ class ForceFrontier:
         Assumes that the nodes are identified by integers starting at 1
         """
         pos = nx.spring_layout(infected_graph)
-        print(pos)
         points = np.zeros((len(pos), 2))
         i = 0
         for p in pos:
             points[i] = pos[p]
             i += 1
-        print(points)
+            
         hull = ConvexHull(points)
         nodes = list(pos)
         return [nodes[p] for p in hull.vertices]
