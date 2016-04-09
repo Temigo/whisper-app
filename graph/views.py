@@ -149,7 +149,7 @@ class Algorithm(APIView):
         current_graph = json_graph.node_link_graph(current_graph)
         current_infection = json_graph.node_link_graph(current_infection)
         times = int(request.data["times"])
-
+        seeds = request.data["seeds"]
 
         params = algorithmMethod["params"]
         algorithm_params = ()
@@ -177,11 +177,17 @@ class Algorithm(APIView):
             sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
             time_elapsed.append(timeit.default_timer() - start_time)
 
+        # Measurement 1 : distance from source to seed
+        distances = {}
+        for source in sources:
+            distances[source] = {}
+            for seed in seeds:
+                distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
         #d = {}
         #for source in sources:
         #    d[source] = nx.astar_path_length(current_graph, real_source, source)
 
-        return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed})
+        return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed, 'distances': distances})
 
 class Frontier(APIView):
     def post(self, request, format=None):

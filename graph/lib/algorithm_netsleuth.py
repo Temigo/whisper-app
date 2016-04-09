@@ -111,15 +111,15 @@ class AlgorithmNetsleuth:
                                 frontier.node[i_graph.nodes()[i]]['clear']
 
         # SymPy
-        Lm = Matrix(i_laplacian_matrix.todense())
-        i = self.Sym2NumArray(Matrix(Lm.eigenvects()[0][2][0])).argmax()
+        # Lm = Matrix(i_laplacian_matrix.todense())
+        # i = self.Sym2NumArray(Matrix(Lm.eigenvects()[0][2][0])).argmax()
 
         # NumPy
-        # val, vect = linalg.eigh(i_laplacian_matrix.todense())
-        #i = vect[0].argmax()
+        val, vect = linalg.eigh(i_laplacian_matrix.todense())
+        i = vect[0].argmax()
 
         # SciPY
-        # val, vect = eigs(i_laplacian_matrix.rint())
+        # val, vect = eigs(i_laplacian_matrix.rint(), k=1)
         # i = vect[:, 0].argmax()
 
         seed = (i_graph.nodes()[i])
