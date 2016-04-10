@@ -26,6 +26,13 @@ from .lib.algorithm_remi import AlgorithmRemi
 from .lib import randomInfection, forceFrontier
 from .lib.algorithm_remi_original import AlgorithmRemiOriginal
 
+from RestrictedPython import compile_restricted
+from RestrictedPython.PrintCollector import PrintCollector
+_print_ = PrintCollector
+from RestrictedPython.Guards import full_write_guard
+_write_ = full_write_guard
+_getattr_ = getattr
+
 #logging.basicConfig(level=logging.DEBUG)
 # coloredlogs.install(level='DEBUG')
 # logger = logging.getLogger(__name__)
@@ -163,6 +170,7 @@ class Algorithm(APIView):
                 algorithm_params = algorithm_params + (param['value'],)
 
         # logger.debug(algorithm_params)
+
         algorithm_methods = {
         1: AlgorithmSZ,
         2: AlgorithmNetsleuth,
@@ -171,34 +179,55 @@ class Algorithm(APIView):
         5: AlgorithmRemiOriginal,
         6: AlgorithmRemi
         }
-        algo = algorithm_methods[algorithm_id]()
 
-        time_elapsed = []
-        sources = []
-        for i in range(times):
-            start_time = timeit.default_timer()
-            sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
-            time_elapsed.append(timeit.default_timer() - start_time)
+        if algorithm_id == -1: # Custom algorithm
+            custom_algorithm = request.data["algo"]
+            # exec(custom_algorithm)
+            code = compile_restricted(custom_algorithm, '<string>', 'exec')
+            exec(code)
+            algo = CustomAlgorithm()
+        else:
+            algo = algorithm_methods[algorithm_id]()
 
-        # Measurement 1 : distance from source to seed
-        distances = {}
-        for source in sources:
-            distances[source] = {}
+        error = ""
+        try:
+            time_elapsed = []
+            sources = []
+            for i in range(times):
+                start_time = timeit.default_timer()
+                sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
+                time_elapsed.append(timeit.default_timer() - start_time)
+
+            # Measurement 1 : distance from source to seed
+            distances = {}
+            for source in sources:
+                distances[source] = {}
+                for seed in seeds:
+                    distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
+            # Measurement 2 : Stability
+            infection = randomInfection.Infection()
+            datas = []
             for seed in seeds:
-                distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
-        # Measurement 2 : Stability
-        infection = randomInfection.Infection()
-        datas = []
-        for seed in seeds:
-            for node in current_graph.neighbors(seed):
-                if node not in seeds:
-                    infection_graph = infection.run(current_graph, seeds+[node], ratio, proba)
-                    new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
-                    for source in new_sources:
-                        datas.append(nx.astar_path_length(current_graph, source, seed)) # TODO
-        datas = numpy.array(datas)
+                for node in current_graph.neighbors(seed):
+                    if node not in seeds:
+                        infection_graph = infection.run(current_graph, seeds+[node], ratio, proba)
+                        new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
+                        for source in new_sources:
+                            datas.append(nx.astar_path_length(current_graph, source, seed)) # TODO
+            datas = numpy.array(datas)
+            return Response({'source': sources if sources else -1,
+                            'timeElapsed': time_elapsed,
+                            'distances': distances,
+                            'mean': numpy.mean(datas) if datas.size else -1,
+                            'variance': numpy.var(datas) if datas.size else -1,
+                            'error': str(error)})
+        except Exception as e:
+            error = e
+            raise e
+            return Response({'source': sources if sources else -1,
+                            'timeElapsed': time_elapsed,
+                            'error': str(error)})
 
-        return Response({'source': sources if sources else -1, 'timeElapsed': time_elapsed, 'distances': distances, 'mean': numpy.mean(datas) if datas.size else -1, 'variance': numpy.var(datas) if datas.size else -1})
 
 class Frontier(APIView):
     def post(self, request, format=None):
