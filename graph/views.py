@@ -157,6 +157,7 @@ class Algorithm(APIView):
         current_graph = json_graph.node_link_graph(current_graph)
         current_infection = json_graph.node_link_graph(current_infection)
         times = int(request.data["times"])
+        average_times = int(request.data["average"])
         seeds = request.data["seeds"]
         ratio = request.data["ratio"] if request.data["ratio"] != 0 else 0.5
         proba = request.data["proba"] if request.data["proba"] != 0 else 0.5
@@ -210,10 +211,11 @@ class Algorithm(APIView):
             for seed in seeds:
                 for node in current_graph.neighbors(seed):
                     if node not in seeds:
-                        infection_graph = infection.run(current_graph, seeds+[node], ratio, proba)
-                        new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
-                        for source in new_sources:
-                            datas.append(nx.astar_path_length(current_graph, source, seed)) # TODO
+                        for i in range(min(average_times, 500)):
+                            infection_graph = infection.run(current_graph, seeds+[node], ratio, proba)
+                            new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
+                            for source in new_sources:
+                                datas.append(nx.astar_path_length(current_graph, source, seed))
             datas = numpy.array(datas)
             return Response({'source': sources if sources else -1,
                             'timeElapsed': time_elapsed,
