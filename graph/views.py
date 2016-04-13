@@ -218,7 +218,7 @@ class Algorithm(APIView):
                     start_time = timeit.default_timer()
                     sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
                     time_elapsed.append(timeit.default_timer() - start_time)
-                    
+
                 # Measurement 1 : distance from source to seed
                 distances = {}
                 for source in sources:
@@ -239,14 +239,17 @@ class Algorithm(APIView):
                 return Response({'source': sources if sources else -1,
                                 'timeElapsed': time_elapsed,
                                 'distances': distances,
+                                'diameter': nx.diameter(current_graph),
                                 'mean': numpy.mean(datas) if datas.size else -1,
                                 'variance': numpy.var(datas) if datas.size else -1,
                                 'error': str(error)})
-            else:
+            else: # Detailed study
                 detailed_datas = []
+                diameter = nx.diameter(current_graph)
                 for node in current_graph:
                     temp = {}
                     temp["node"] = node
+                    temp["diameter"] = diameter
                     temp["degree"] = current_graph.degree(node)
                     infection_graph = infection.run(current_graph, [node], ratio, proba)
                     new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
