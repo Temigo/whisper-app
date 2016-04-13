@@ -27,6 +27,7 @@ from .lib.algorithm_fioriti_chinnici import AlgorithmFC
 from .lib.algorithm_remi import AlgorithmRemi
 from .lib import randomInfection, forceFrontier
 from .lib.algorithm_remi_original import AlgorithmRemiOriginal
+from .lib.algorithm_henri import AlgorithmHenri
 
 from RestrictedPython import compile_restricted
 from RestrictedPython.PrintCollector import PrintCollector
@@ -166,7 +167,7 @@ class Algorithm(APIView):
         # logger.info("Apply algorithm")
         # logger.debug(request.data)
         algorithmMethod = request.data["algorithmMethod"]
-        algorithm_id = algorithmMethod['id']
+        algorithm_id = int(algorithmMethod['id'])
         current_graph = request.data["currentGraph"]
         current_infection = request.data["currentInfection"]
         current_graph = json_graph.node_link_graph(current_graph)
@@ -194,7 +195,8 @@ class Algorithm(APIView):
         3: AlgorithmPinto,
         4: AlgorithmFC,
         5: AlgorithmRemiOriginal,
-        6: AlgorithmRemi
+        6: AlgorithmRemi,
+        7: AlgorithmHenri
         }
 
         if algorithm_id == -1: # Custom algorithm
@@ -216,7 +218,7 @@ class Algorithm(APIView):
                     start_time = timeit.default_timer()
                     sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
                     time_elapsed.append(timeit.default_timer() - start_time)
-
+                    
                 # Measurement 1 : distance from source to seed
                 distances = {}
                 for source in sources:

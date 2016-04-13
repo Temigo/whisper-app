@@ -15,7 +15,8 @@ import numpy as np
 from scipy.misc import comb
 from sympy import N as numeric
 from numpy import zeros
-from scipy.sparse.linalg import eigs as eigs
+#from scipy.sparse.linalg import eigs as eigs
+from scipy.linalg import eig
 from scipy import linalg
 from sympy import Matrix
 
@@ -115,12 +116,13 @@ class AlgorithmNetsleuth:
         # i = self.Sym2NumArray(Matrix(Lm.eigenvects()[0][2][0])).argmax()
 
         # NumPy
-        val, vect = linalg.eigh(i_laplacian_matrix.todense())
-        i = vect[0].argmax()
+        # val, vect = linalg.eigh(i_laplacian_matrix.todense())
+        # i = vect[0].argmax()
 
         # SciPY
         # val, vect = eigs(i_laplacian_matrix.rint(), k=1)
-        # i = vect[:, 0].argmax()
+        val, vect = eig(i_laplacian_matrix.rint().todense())
+        i = vect[:, 0].argmax()
 
         seed = (i_graph.nodes()[i])
 
