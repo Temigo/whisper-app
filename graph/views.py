@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.core.urlresolvers import reverse
 
-import json
+import json, csv
 import timeit
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -15,6 +15,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
+from rest_framework.settings import api_settings
+from rest_framework_csv import renderers as r
 from .serializers import GraphSerializer, InfectionSerializer
 from .models import Graph, Infection
 
@@ -147,6 +149,19 @@ class SimulateInfection(APIView):
         return Response({'infectionGraph': json_graph.node_link_data(infection_graph)})
 
 class Algorithm(APIView):
+    #renderer_classes = [r.CSVRenderer] + api_settings.DEFAULT_RENDERER_CLASSES
+    #renderer_classes = (r.CSVRenderer,)
+
+    def compute_measurement_2(self, current_graph, ratio, proba, algo, infection, algorithm_params, average_times, seed, new_seeds, datas=None):
+        datas = datas if datas else []
+        for i in range(min(average_times, 500)):
+            infection_graph = infection.run(current_graph, new_seeds, ratio, proba)
+            new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
+            for source in new_sources:
+                datas.append(nx.astar_path_length(current_graph, source, seed))
+                # FIXME distance source -> seed or source -> node
+        return datas
+
     def post(self, request, format=None):
         # logger.info("Apply algorithm")
         # logger.debug(request.data)
@@ -158,6 +173,7 @@ class Algorithm(APIView):
         current_infection = json_graph.node_link_graph(current_infection)
         times = int(request.data["times"])
         average_times = int(request.data["average"])
+        detailed = request.data["detailed"]
         seeds = request.data["seeds"]
         ratio = request.data["ratio"] if request.data["ratio"] != 0 else 0.5
         proba = request.data["proba"] if request.data["proba"] != 0 else 0.5
@@ -192,37 +208,60 @@ class Algorithm(APIView):
 
         error = ""
         try:
-            time_elapsed = []
-            sources = []
-            for i in range(times):
-                start_time = timeit.default_timer()
-                sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
-                time_elapsed.append(timeit.default_timer() - start_time)
-
-            # Measurement 1 : distance from source to seed
-            distances = {}
-            for source in sources:
-                distances[source] = {}
-                for seed in seeds:
-                    distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
-            # Measurement 2 : Stability
             infection = randomInfection.Infection()
-            datas = []
-            for seed in seeds:
-                for node in current_graph.neighbors(seed):
-                    if node not in seeds:
-                        for i in range(min(average_times, 500)):
-                            infection_graph = infection.run(current_graph, seeds+[node], ratio, proba)
-                            new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
-                            for source in new_sources:
-                                datas.append(nx.astar_path_length(current_graph, source, seed))
-            datas = numpy.array(datas)
-            return Response({'source': sources if sources else -1,
-                            'timeElapsed': time_elapsed,
-                            'distances': distances,
-                            'mean': numpy.mean(datas) if datas.size else -1,
-                            'variance': numpy.var(datas) if datas.size else -1,
-                            'error': str(error)})
+            if not detailed:
+                time_elapsed = []
+                sources = []
+                for i in range(times):
+                    start_time = timeit.default_timer()
+                    sources.extend(algo.run(current_graph, current_infection, *algorithm_params))
+                    time_elapsed.append(timeit.default_timer() - start_time)
+
+                # Measurement 1 : distance from source to seed
+                distances = {}
+                for source in sources:
+                    distances[source] = {}
+                    for seed in seeds:
+                        distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
+
+                # Measurement 2 : Stability
+                datas = []
+                for seed in seeds:
+                    for node in current_graph.neighbors(seed):
+                        if node not in seeds:
+                            new_seeds = seeds[:]
+                            new_seeds.remove(seed)
+                            datas = self.compute_measurement_2(current_graph, ratio, proba, algo, infection, algorithm_params, average_times, node, new_seeds+[node], datas)
+                datas = numpy.array(datas)
+
+                return Response({'source': sources if sources else -1,
+                                'timeElapsed': time_elapsed,
+                                'distances': distances,
+                                'mean': numpy.mean(datas) if datas.size else -1,
+                                'variance': numpy.var(datas) if datas.size else -1,
+                                'error': str(error)})
+            else:
+                detailed_datas = []
+                for node in current_graph:
+                    temp = {}
+                    temp["node"] = node
+                    temp["degree"] = current_graph.degree(node)
+                    infection_graph = infection.run(current_graph, [node], ratio, proba)
+                    new_sources = algo.run(current_graph, infection_graph, *algorithm_params)
+                    temp["sources"] = []
+                    for source in new_sources:
+                        temp2 = {}
+                        temp2["source"] = source
+                        temp2['distance'] = nx.astar_path_length(current_graph, node, source)
+                        datas = numpy.array(self.compute_measurement_2(current_graph, ratio, proba, algo, infection, algorithm_params, average_times, node, [source]))
+                        temp2["mean"] = numpy.mean(datas)
+                        temp2["variance"] = numpy.var(datas)
+                        temp["sources"].append(temp2)
+                    detailed_datas.append(temp)
+                print detailed_datas
+                return Response({"data": r.CSVRenderer().render(detailed_datas)})
+                #return Response({"data": detailed_datas})
+
         except Exception as e:
             error = e
             raise e
