@@ -38,8 +38,12 @@ class Infection:
             self.ripple_step(G, frontier, infected, prob, i)
 
         #self.edging(G, infected)
-        infected = nx.Graph(G.subgraph(infected.nodes()))
-        return infected
+        infected2 = nx.Graph(G.subgraph(infected.nodes()))
+        # FIXME : attributes of nodes ?
+        for node in infected2:
+            infected2.node[node]['infection_time'] = infected.node[node]['infection_time']
+
+        return infected2
 
     def ripple_step(self, G, frontier, infected, prob, current_time):
         """ Generating a step in the infection simulation"""
@@ -70,7 +74,7 @@ class Infection:
             if len(frontier_degree_t[j]) > 0:
                 f_j = len(frontier_degree_t[j])
                 p_j = 1-(1-prob)**(j+1)
-                n_j = int(min(np.floor(p_j*(f_j+1)), f_j))
+                n_j = min(1+int(min(np.floor(p_j*(f_j+1)), f_j)), f_j)
                 # The f_j/prob implicates n_j > f_j
 
                 infected_t.append(np.random.choice(frontier_degree_t[j], n_j,

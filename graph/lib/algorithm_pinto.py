@@ -53,6 +53,7 @@ class AlgorithmPinto:
         first_node = O[0]
 
         # Compute the delay vector d relative to first_node
+        print list(G.nodes(data=True))
         d = self.observed_delay(G, O)
 
         # calculates F for the first node: fulfills max

@@ -228,12 +228,13 @@ class Algorithm(APIView):
 
                 # Measurement 2 : Stability
                 datas = []
-                for seed in seeds:
-                    for node in current_graph.neighbors(seed):
-                        if node not in seeds:
-                            new_seeds = seeds[:]
-                            new_seeds.remove(seed)
-                            datas = self.compute_measurement_2(current_graph, ratio, proba, algo, infection, algorithm_params, average_times, node, new_seeds+[node], datas)
+                if algorithm_id != 3:
+                    for seed in seeds:
+                        for node in current_graph.neighbors(seed):
+                            if node not in seeds:
+                                new_seeds = seeds[:]
+                                new_seeds.remove(seed)
+                                datas = self.compute_measurement_2(current_graph, ratio, proba, algo, infection, algorithm_params, average_times, node, new_seeds+[node], datas)
                 datas = numpy.array(datas)
 
                 return Response({'source': sources if sources else -1,
@@ -263,7 +264,7 @@ class Algorithm(APIView):
                         temp2["variance"] = numpy.var(datas)
                         temp["sources"].append(temp2)
                     detailed_datas.append(temp)
-                print detailed_datas
+                # print detailed_datas
                 return Response({"data": r.CSVRenderer().render(detailed_datas)})
                 #return Response({"data": detailed_datas})
 
