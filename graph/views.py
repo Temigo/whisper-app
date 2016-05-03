@@ -175,6 +175,7 @@ class Algorithm(APIView):
         times = int(request.data["times"])
         average_times = int(request.data["average"])
         detailed = request.data["detailed"]
+        measure = request.data["measure"]
         seeds = request.data["seeds"]
         ratio = request.data["ratio"] if request.data["ratio"] != 0 else 0.5
         proba = request.data["proba"] if request.data["proba"] != 0 else 0.5
@@ -221,20 +222,22 @@ class Algorithm(APIView):
 
                 # Measurement 1 : distance from source to seed
                 distances = {}
-                for source in sources:
-                    distances[source] = {}
-                    for seed in seeds:
-                        distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
+                if measure:
+                    for source in sources:
+                        distances[source] = {}
+                        for seed in seeds:
+                            distances[source][seed] = nx.astar_path_length(current_graph, source, seed)
 
                 # Measurement 2 : Stability
                 datas = []
-                if algorithm_id != 3:
-                    for seed in seeds:
-                        for node in current_graph.neighbors(seed):
-                            if node not in seeds:
-                                new_seeds = seeds[:]
-                                new_seeds.remove(seed)
-                                datas = self.compute_measurement_2(current_graph, ratio, proba, algo, infection, algorithm_params, average_times, node, new_seeds+[node], datas)
+                if measure:
+                    if algorithm_id != 3:
+                        for seed in seeds:
+                            for node in current_graph.neighbors(seed):
+                                if node not in seeds:
+                                    new_seeds = seeds[:]
+                                    new_seeds.remove(seed)
+                                    datas = self.compute_measurement_2(current_graph, ratio, proba, algo, infection, algorithm_params, average_times, node, new_seeds+[node], datas)
                 datas = numpy.array(datas)
 
                 return Response({'source': sources if sources else -1,
