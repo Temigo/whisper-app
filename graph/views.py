@@ -201,9 +201,9 @@ class Algorithm(APIView):
 
         if algorithm_id == -1: # Custom algorithm
             custom_algorithm = request.data["algo"]
-            # exec(custom_algorithm)
-            code = compile_restricted(custom_algorithm, '<string>', 'exec')
-            exec(code)
+            exec(custom_algorithm)
+            # code = compile_restricted(custom_algorithm, '<string>', 'exec')
+            # exec(code)
             algo = CustomAlgorithm()
         else:
             algo = algorithm_methods[algorithm_id]()
