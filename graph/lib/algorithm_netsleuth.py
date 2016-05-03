@@ -46,7 +46,7 @@ class AlgorithmNetsleuth:
     #
     #####################################################################
 
-    def run(self, graph, i_graph_init, prob=1):
+    def run(self, graph, i_graph_init, prob):
         """Executes the Netsleuth algotithm on graph, given the infected nodes
         i_graph_init from graph"""
         # Initiating the seeds
